@@ -21,6 +21,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    environment: KidsPlanner
     timeout-minutes: 20
     steps:
       - name: Comprobar hora en Madrid
