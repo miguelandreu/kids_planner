@@ -106,7 +106,7 @@ def send_email(subject: str, body: str, html_body: str | None = None) -> str:
         return f"DRY RUN: email '{msg['Subject']}' not sent ({len(recipients)} recipient(s))."
 
     host = os.environ["SMTP_HOST"]
-    port = int(os.getenv("SMTP_PORT", "587"))
+    port = int(os.getenv("SMTP_PORT") or "587")
     username = os.environ["SMTP_USERNAME"]
     password = os.environ["SMTP_PASSWORD"]
 
