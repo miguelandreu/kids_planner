@@ -1,6 +1,6 @@
 # Kids Planner
 
-An AI agent that emails a weekend plan for families with young children. Every Thursday at noon (Madrid time) it:
+An AI agent that emails a weekend plan for families with young children. Every Thursday around noon (Madrid time) it:
 
 1. Fetches the Friday–Sunday weather forecast from [Open-Meteo](https://open-meteo.com/) (free, no API key).
 2. Searches the web for kids' activities in Alcobendas, San Sebastián de los Reyes, Tres Cantos and northern Madrid.
@@ -91,7 +91,7 @@ Unit tests mock SMTP and Open-Meteo. Tests marked `integration` call the real Op
 
 ### Weekly run
 
-[`weekly-plans.yml`](.github/workflows/weekly-plans.yml) runs every Thursday at 12:00 Europe/Madrid. GitHub cron uses UTC, so it is scheduled at both 10:00 and 11:00 UTC and a first step lets only the run where it is 12:00 in Madrid continue (this handles summer/winter time). Scheduled runs can be delayed by a few minutes by GitHub.
+[`weekly-plans.yml`](.github/workflows/weekly-plans.yml) runs every Thursday at 10:00 UTC, which is 12:00 in Madrid during summer time and 11:00 during winter time. Scheduled runs can be delayed by a few minutes by GitHub.
 
 It can also be launched manually from the **Actions** tab. Manual runs default to **dry run**; untick `dry_run` to actually send the email.
 

@@ -2,11 +2,8 @@ name: Planes con niños
 
 on:
   schedule:
-    # Jueves a las 12:00 hora de Madrid. GitHub usa UTC, así que se programan las
-    # dos horas posibles (10:00 UTC en CEST, 11:00 UTC en CET) y el job solo sigue
-    # cuando en Madrid son las 12.
+    # Jueves a las 10:00 UTC (12:00 en Madrid en verano, 11:00 en invierno).
     - cron: "0 10 * * 4"
-    - cron: "0 11 * * 4"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -24,31 +21,16 @@ jobs:
     environment: KidsPlanner
     timeout-minutes: 20
     steps:
-      - name: Comprobar hora en Madrid
-        id: gate
-        run: |
-          hour=$(TZ=Europe/Madrid date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "12" ]; then
-            echo "Son las $hour h en Madrid, no las 12: se omite."
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.gate.outputs.run == 'true'
 
       - uses: astral-sh/setup-uv@v6
-        if: steps.gate.outputs.run == 'true'
         with:
           python-version-file: .python-version
 
       - name: Instalar dependencias
-        if: steps.gate.outputs.run == 'true'
         run: uv sync --frozen --no-dev
 
       - name: Generar y enviar planes
-        if: steps.gate.outputs.run == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
