@@ -1,0 +1,61 @@
+name: Planes con niños
+
+on:
+  schedule:
+    # Jueves a las 12:00 hora de Madrid. GitHub usa UTC, así que se programan las
+    # dos horas posibles (10:00 UTC en CEST, 11:00 UTC en CET) y el job solo sigue
+    # cuando en Madrid son las 12.
+    - cron: "0 10 * * 4"
+    - cron: "0 11 * * 4"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Imprimir el email en vez de enviarlo"
+        type: boolean
+        default: true
+
+concurrency:
+  group: weekly-plans
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Comprobar hora en Madrid
+        id: gate
+        run: |
+          hour=$(TZ=Europe/Madrid date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "12" ]; then
+            echo "Son las $hour h en Madrid, no las 12: se omite."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+
+      - uses: astral-sh/setup-uv@v6
+        if: steps.gate.outputs.run == 'true'
+        with:
+          python-version-file: .python-version
+
+      - name: Instalar dependencias
+        if: steps.gate.outputs.run == 'true'
+        run: uv sync --frozen --no-dev
+
+      - name: Generar y enviar planes
+        if: steps.gate.outputs.run == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
+        run: uv run kids-planner
