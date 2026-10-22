@@ -2,8 +2,8 @@ name: Planes con niños
 
 on:
   schedule:
-    # Jueves a las 10:00 UTC (12:00 en Madrid en verano, 11:00 en invierno).
-    - cron: "0 10 * * 4"
+    # Jueves a las 12:10 UTC (14:17 en Madrid en verano, 13:17 en invierno).
+    - cron: "17 12 * * 4"
   workflow_dispatch:
     inputs:
       dry_run:
